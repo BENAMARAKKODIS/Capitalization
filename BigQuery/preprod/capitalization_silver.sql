@@ -29,13 +29,12 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   capitams_gsfa          STRING OPTIONS(description = "GSFA attaché au ticket"),
   capitams_capitalization_status STRING OPTIONS(description = "Statut de capit du ticket"),
   capitams_nrl           STRING OPTIONS(description = 'NRL Reference'),
-  -- NRL additions
   capitams_nrl_number_clean INT64 OPTIONS(description = 'NRL number extracted from capitams_nrl as integer for joining with NRL table'),
   nrl_date_statut_valide DATE OPTIONS(description = 'Date statut valide from NRL preprocessing table'),
 
   kpi_perfo_v0           INT64 OPTIONS(description = 'Duration of the v0 phase in calendar days'),
-  kpi_perfo_v1           INT64 OPTIONS(description = 'Duration of the v1 phase in calendar days'),
-  kpi_perfo_v2           INT64 OPTIONS(description = 'Duration of the v2 phase in calendar days'),
+  kpi_perfo_v1           INT64 OPTIONS(description = 'Duration from CAPITAMS creation to NRL validation in calendar days'),
+  kpi_perfo_v2           INT64 OPTIONS(description = 'Duration from NRL validation to capitalization end in calendar days'),
 
   top_priority           STRING OPTIONS(description = 'Statut de la capitalisation')
 )
@@ -123,34 +122,32 @@ SELECT
     END
   ) AS kpi_perfo_v0,
 
-  -- KPI perfo v1
+  -- KPI perfo v1 — updated to use NRL validation date
   CASE
     -- Ticket capitams pas créé
     WHEN capitams.capitams_creation_date IS NULL THEN NULL
-    -- Ticket capitams avec un BMIR en cours
-    WHEN capitams.capitams_bmir_encours_date IS NOT NULL THEN
-      DATE_DIFF(DATE(capitams.capitams_bmir_encours_date), DATE(capitams.capitams_creation_date), DAY)
-    -- Ticket capitams sans BMIR ou NPK
+    -- Ticket capitams avec un NRL valide
+    WHEN nrl.date_statut_valide IS NOT NULL THEN
+      DATE_DIFF(DATE(nrl.date_statut_valide), DATE(capitams.capitams_creation_date), DAY)
+    -- Ticket capitams sans NRL en statut valide
     ELSE
       DATE_DIFF(CURRENT_DATE(), DATE(capitams.capitams_creation_date), DAY)
   END AS kpi_perfo_v1,
 
-  -- KPI perfo v2
-  ABS( -- Cas ou un composant BMIRF a été mis par erreur avant un BMIR en cours
-    CASE
-      -- Ticket n'ayant jamais en de BMIR en cours
-      WHEN capitams.capitams_bmir_encours_date IS NULL THEN NULL
-      -- Ticket capitams avec un NPK
-      WHEN capitams.capitams_npk_date IS NOT NULL THEN
-        DATE_DIFF(DATE(capitams.capitams_npk_date), DATE(capitams.capitams_creation_date), DAY)
-      -- Ticket avec un BMIR terminé
-      WHEN capitams.capitams_bmir_termine_date IS NOT NULL THEN
-        DATE_DIFF(DATE(capitams.capitams_bmir_termine_date), DATE(capitams.capitams_bmir_encours_date), DAY)
-      -- Ticket avec un BMIR en cours
-      ELSE
-        DATE_DIFF(CURRENT_DATE(), DATE(capitams.capitams_bmir_encours_date), DAY)
-    END 
-  ) AS kpi_perfo_v2,
+  -- KPI perfo v2 — updated to use NRL validation date
+  CASE
+    -- Ticket n'ayant jamais eu de NRL en valide
+    WHEN nrl.date_statut_valide IS NULL THEN NULL
+    -- Ticket capitams avec un NPK
+    WHEN capitams.capitams_npk_date IS NOT NULL THEN
+      DATE_DIFF(DATE(capitams.capitams_npk_date), DATE(nrl.date_statut_valide), DAY)
+    -- Ticket avec un BMIR terminé
+    WHEN capitams.capitams_bmir_termine_date IS NOT NULL THEN
+      DATE_DIFF(DATE(capitams.capitams_bmir_termine_date), DATE(nrl.date_statut_valide), DAY)
+    -- Ticket avec un BMIR en cours
+    ELSE
+      DATE_DIFF(CURRENT_DATE(), DATE(nrl.date_statut_valide), DAY)
+  END AS kpi_perfo_v2,
 
   ---------------------------------------------------------
   -- 5. Calcul du statut Top Priority
