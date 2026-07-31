@@ -4,8 +4,9 @@
 
 --- Ligne à changer: preprod / prod
 CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
---- Bien faire attention (1/4)
+--- Bien faire attention (1/5)
 (
+  -- colonnes projet VIES
   vies_ticket_id         STRING NOT NULL OPTIONS(description = 'Unique Identification Number for a VIES ticket'),
   vies_summary           STRING OPTIONS(description = 'Description of the issue'),
   vies_affected_versions STRING OPTIONS(description = 'Scope of the ticket, key information for scoping KPIs'),
@@ -20,7 +21,7 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   vies_lup_linked        STRING OPTIONS(description = 'LUP linked to this VIES ticket. Must be 1 LUP maximum or NULL.'),
   vies_component_names   ARRAY<STRING> OPTIONS(description = 'List of component names'),
   vies_creation_date     TIMESTAMP OPTIONS(description = 'Creation date of the VIES ticket used for partitioning'),  
-
+  -- colonnes projet CAPITAMS
   capitams_key           STRING OPTIONS(description = 'Unique Identification Number for a CAPITAMS ticket'),
   capitams_summary       STRING OPTIONS(description = 'Description of the issue'),
   capitams_status        STRING OPTIONS(description = 'Status in the workflow'),
@@ -29,13 +30,12 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   capitams_gsfa          STRING OPTIONS(description = "GSFA attaché au ticket"),
   capitams_capitalization_status STRING OPTIONS(description = "Statut de capit du ticket"),
   capitams_nrl           STRING OPTIONS(description = 'NRL Reference'),
-  capitams_nrl_number_clean INT64 OPTIONS(description = 'NRL number extracted from capitams_nrl as integer for joining with NRL table'),
+  -- colonnes NRL
   nrl_date_statut_valide DATE OPTIONS(description = 'Date statut valide from NRL preprocessing table'),
-
+  -- Nouvelles colonnes
   kpi_perfo_v0           INT64 OPTIONS(description = 'Duration of the v0 phase in calendar days'),
-  kpi_perfo_v1           INT64 OPTIONS(description = 'Duration from CAPITAMS creation to NRL validation in calendar days'),
-  kpi_perfo_v2           INT64 OPTIONS(description = 'Duration from NRL validation to capitalization end in calendar days'),
-
+  kpi_perfo_v1           INT64 OPTIONS(description = 'Duration of the v1 phase in calendar days'),
+  kpi_perfo_v2           INT64 OPTIONS(description = 'Duration of the v2 phase in calendar days'),
   top_priority           STRING OPTIONS(description = 'Statut de la capitalisation')
 )
 PARTITION BY DATE(vies_creation_date)
@@ -51,7 +51,7 @@ preprocessed_vies AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_VIES_preprod`
 ),
---- Bien faire attention (2/4)
+--- Bien faire attention (2/5)
 
 ---------------------------------------------------------
 -- 2. SOURCE CAPITALIZATION
@@ -62,16 +62,18 @@ preprocessed_capitams AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_CAPITAMS_preprod`
 ),
---- Bien faire attention (3/4)
+--- Bien faire attention (3/5)
 
 ---------------------------------------------------------
 -- 3. SOURCE NRL
 ---------------------------------------------------------
 
+--- Ligne à changer: preprod / prod
 preprocessing_nrl AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_NRL_preprod`
 )
+--- Bien faire attention (4/5)
 
 ---------------------------------------------------------
 -- 4. FINAL ASSEMBLY
@@ -104,7 +106,6 @@ SELECT
   capitams.capitams_subtask_summary AS capitams_nrl,
 
   -- NRL Fields
-  SAFE_CAST(REGEXP_EXTRACT(capitams.capitams_subtask_summary, r'\d+') AS INT64) AS capitams_nrl_number_clean,
   DATE(nrl.date_statut_valide) AS nrl_date_statut_valide,
 
   -- KPI perfo v0
@@ -122,7 +123,7 @@ SELECT
     END
   ) AS kpi_perfo_v0,
 
-  -- KPI perfo v1 — updated to use NRL validation date
+  -- KPI perfo v1 à changer avec date NRL
   CASE
     -- Ticket capitams pas créé
     WHEN capitams.capitams_creation_date IS NULL THEN NULL
@@ -134,7 +135,7 @@ SELECT
       DATE_DIFF(CURRENT_DATE(), DATE(capitams.capitams_creation_date), DAY)
   END AS kpi_perfo_v1,
 
-  -- KPI perfo v2 — updated to use NRL validation date
+  -- KPI perfo v2 à changer avec date NRL
   CASE
     -- Ticket n'ayant jamais eu de NRL en valide
     WHEN nrl.date_statut_valide IS NULL THEN NULL
