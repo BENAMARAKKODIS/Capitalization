@@ -29,6 +29,9 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   capitams_gsfa          STRING OPTIONS(description = "GSFA attaché au ticket"),
   capitams_capitalization_status STRING OPTIONS(description = "Statut de capit du ticket"),
   capitams_nrl           STRING OPTIONS(description = 'NRL Reference'),
+  -- NRL additions
+  capitams_nrl_number_clean INT64 OPTIONS(description = 'NRL number extracted from capitams_nrl as integer for joining with NRL table'),
+  nrl_date_statut_valide DATE OPTIONS(description = 'Date statut valide from NRL preprocessing table'),
 
   kpi_perfo_v0           INT64 OPTIONS(description = 'Duration of the v0 phase in calendar days'),
   kpi_perfo_v1           INT64 OPTIONS(description = 'Duration of the v1 phase in calendar days'),
@@ -59,11 +62,20 @@ preprocessed_vies AS (
 preprocessed_capitams AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_CAPITAMS_preprod`
-)
+),
 --- Bien faire attention (3/4)
 
 ---------------------------------------------------------
--- 3. FINAL ASSEMBLY
+-- 3. SOURCE NRL
+---------------------------------------------------------
+
+preprocessing_nrl AS (
+  SELECT *
+  FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_NRL_preprod`
+)
+
+---------------------------------------------------------
+-- 4. FINAL ASSEMBLY
 ---------------------------------------------------------
 SELECT
   -- VIES Fields
@@ -91,6 +103,10 @@ SELECT
   capitams.capitams_gsfa,
   capitams.capitams_capitalization_status,
   capitams.capitams_subtask_summary AS capitams_nrl,
+
+  -- NRL Fields
+  SAFE_CAST(REGEXP_EXTRACT(capitams.capitams_subtask_summary, r'\d+') AS INT64) AS capitams_nrl_number_clean,
+  DATE(nrl.date_statut_valide) AS nrl_date_statut_valide,
 
   -- KPI perfo v0
   GREATEST(
@@ -137,7 +153,7 @@ SELECT
   ) AS kpi_perfo_v2,
 
   ---------------------------------------------------------
-  -- 4. Calcul du statut Top Priority
+  -- 5. Calcul du statut Top Priority
   ---------------------------------------------------------
   CASE
 
@@ -232,6 +248,9 @@ LEFT JOIN UNNEST(vies.vies_linked_issues) AS linked_issue
 LEFT JOIN preprocessed_capitams AS capitams
   ON capitams.capitams_key = linked_issue
 
+LEFT JOIN preprocessing_nrl AS nrl
+  ON nrl.nrl_number = REGEXP_EXTRACT(capitams.capitams_subtask_summary, r'\d+')
+
 -- keep only 1 CAPITAMS per VIES ticket: latest capitams_creation_date
 QUALIFY ROW_NUMBER() OVER (
   PARTITION BY vies.vies_ticket_id
@@ -239,7 +258,7 @@ QUALIFY ROW_NUMBER() OVER (
 ) = 1;
 
 ---------------------------------------------------------
--- 5. Primary Key Assignment
+-- 6. Primary Key Assignment
 ---------------------------------------------------------
 
 --- Ligne à changer: preprod / prod
