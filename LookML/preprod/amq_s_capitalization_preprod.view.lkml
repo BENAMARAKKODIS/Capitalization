@@ -1,4 +1,5 @@
 # Ligne à changer: preprod / prod
+
 view: amq_s_capitalization_preprod {
   sql_table_name: `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver` ;;
 # Bien faire attention (1/2)
@@ -113,6 +114,11 @@ view: amq_s_capitalization_preprod {
     primary_key: yes
     description: "Unique Identification Number for a VIES ticket"
     sql: ${TABLE}.vies_ticket_id ;;
+  }
+  dimension: nrl_date_statut_valide {
+    type: date
+    label: "NRL Date Statut Valide"
+    sql: ${TABLE}.nrl_date_statut_valide ;;
   }
   dimension: kpi_perfo_v0 {
     type: number
