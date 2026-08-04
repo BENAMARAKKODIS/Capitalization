@@ -121,34 +121,40 @@ SELECT
       ELSE
         DATE_DIFF(DATE(capitams.capitams_creation_date), DATE(vies.vies_v0_starting_date), DAY)
     END
-  ) AS kpi_perfo_v0,
+  ) AS kpi_perfo_v0, -- TO DO:  à renomer kpi_coverage
 
   -- KPI perfo v1 à changer avec date NRL
-  CASE
-    -- Ticket capitams pas créé
-    WHEN capitams.capitams_creation_date IS NULL THEN NULL
-    -- Ticket capitams avec un NRL valide
-    WHEN nrl.date_statut_valide IS NOT NULL THEN
-      DATE_DIFF(DATE(nrl.date_statut_valide), DATE(capitams.capitams_creation_date), DAY)
-    -- Ticket capitams sans NRL en statut valide
-    ELSE
-      DATE_DIFF(CURRENT_DATE(), DATE(capitams.capitams_creation_date), DAY)
-  END AS kpi_perfo_v1,
+  GREATEST(
+    0, -- la NRL a été mise en statut valide dans LUP avant la création du ticket CapitAMS dans JIRA
+    CASE
+      -- Ticket capitams pas créé
+      WHEN capitams.capitams_creation_date IS NULL THEN NULL
+      -- Ticket capitams avec un NRL valide
+      WHEN nrl.date_statut_valide IS NOT NULL THEN
+        DATE_DIFF(DATE(nrl.date_statut_valide), DATE(capitams.capitams_creation_date), DAY)
+      -- Ticket capitams sans NRL en statut valide
+      ELSE
+        DATE_DIFF(CURRENT_DATE(), DATE(capitams.capitams_creation_date), DAY)
+    END 
+  ) AS kpi_perfo_v1, -- TO DO: à renomer kpi_completness
 
   -- KPI perfo v2 à changer avec date NRL
-  CASE
-    -- Ticket n'ayant jamais eu de NRL en valide
-    WHEN nrl.date_statut_valide IS NULL THEN NULL
-    -- Ticket capitams avec un NPK
-    WHEN capitams.capitams_npk_date IS NOT NULL THEN
-      DATE_DIFF(DATE(capitams.capitams_npk_date), DATE(nrl.date_statut_valide), DAY)
-    -- Ticket avec un BMIR terminé
-    WHEN capitams.capitams_bmir_termine_date IS NOT NULL THEN
-      DATE_DIFF(DATE(capitams.capitams_bmir_termine_date), DATE(nrl.date_statut_valide), DAY)
-    -- Ticket avec un BMIR en cours
-    ELSE
-      DATE_DIFF(CURRENT_DATE(), DATE(nrl.date_statut_valide), DAY)
-  END AS kpi_perfo_v2,
+  GREATEST(
+    0, -- cas ou le ticket CAPITAMS est mis en NPK ou BMIRF dans JIRA avant la maj de la NRL en statut valide dans LUP
+    CASE
+      -- Ticket n'ayant jamais eu de NRL en valide
+      WHEN nrl.date_statut_valide IS NULL THEN NULL
+      -- Ticket capitams avec un NPK
+      WHEN capitams.capitams_npk_date IS NOT NULL THEN
+        DATE_DIFF(DATE(capitams.capitams_npk_date), DATE(nrl.date_statut_valide), DAY)
+      -- Ticket avec un BMIR terminé
+      WHEN capitams.capitams_bmir_termine_date IS NOT NULL THEN
+        DATE_DIFF(DATE(capitams.capitams_bmir_termine_date), DATE(nrl.date_statut_valide), DAY)
+      -- Ticket avec un BMIR en cours
+      ELSE
+        DATE_DIFF(CURRENT_DATE(), DATE(nrl.date_statut_valide), DAY)
+    END 
+  ) AS kpi_perfo_v2, -- kpi_consistency partielle à faire plus tard 
 
   ---------------------------------------------------------
   -- 5. Calcul du statut Top Priority
@@ -262,4 +268,4 @@ QUALIFY ROW_NUMBER() OVER (
 --- Ligne à changer: preprod / prod
 ALTER TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
 ADD PRIMARY KEY (vies_ticket_id) NOT ENFORCED;
---- Bien faire attention (4/4)
+--- Bien faire attention (5/5)
