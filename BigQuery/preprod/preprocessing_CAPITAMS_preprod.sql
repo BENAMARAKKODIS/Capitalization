@@ -8,6 +8,7 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
 (
   capitams_key STRING OPTIONS(description = 'Unique Identification Number for a JIRA ticket'),
   capitams_project STRING OPTIONS(description = 'Business project identification'),
+  capitams_criticity STRING OPTIONS(description = "Criticité du ticket CAPITAMS"),
   capitams_summary STRING OPTIONS(description = 'Description of the issue, useful to analyze KPI but not to calculate it'),
   capitams_status STRING OPTIONS(description = 'Status in the lifecycle'),
   capitams_creation_date TIMESTAMP OPTIONS(description = 'Date of creation of the CAPITAMS ticket'),
@@ -61,6 +62,7 @@ base_capitams_tickets AS (
   SELECT DISTINCT
     t.Key AS capitams_key,
     t.project AS capitams_project,
+    t.criticity AS capitams_criticity,
     t.summary AS capitams_summary,
     t.status.name AS capitams_status,
     t.created AS capitams_creation_date,
@@ -166,6 +168,7 @@ jira_history AS (
 SELECT
   b.capitams_key,
   b.capitams_project,
+  b.capitams_criticity,
   b.capitams_summary,
   b.capitams_status,
   b.capitams_creation_date,

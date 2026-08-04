@@ -12,6 +12,10 @@ view: amq_s_capitalization_preprod {
     hidden: yes
     sql: ${TABLE}.capitams_component_names ;;
   }
+  dimension: capitams_criticity {
+    hidden: yes
+    sql: ${TABLE}.capitams_criticity ;;
+  }
   dimension: capitams_gsfa {
     type: string
     sql: ${TABLE}.capitams_gsfa ;;

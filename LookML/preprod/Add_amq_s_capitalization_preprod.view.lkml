@@ -6,7 +6,7 @@ view: +amq_s_capitalization_preprod {
 
 # ── URLS ────────────────────────────────────────────────────────
 dimension: vies_url {
-  label: "Vies Url"
+  label: "VIES Url"
   group_label: "Caracteristic Standard"
   type: string
   sql: CONCAT('https://jira.dt.renault.com/browse/', ${vies_ticket_id}) ;;
@@ -19,7 +19,7 @@ dimension: vies_url {
 }
 
 dimension: capitams_url {
-  label: "Capitalization Url"
+  label: "CapitAMS Url"
   group_label: "Caracteristic Standard"
   type: string
   sql:

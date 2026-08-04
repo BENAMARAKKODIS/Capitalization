@@ -23,6 +23,7 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   vies_creation_date     TIMESTAMP OPTIONS(description = 'Creation date of the VIES ticket used for partitioning'),  
   -- colonnes projet CAPITAMS
   capitams_key           STRING OPTIONS(description = 'Unique Identification Number for a CAPITAMS ticket'),
+  capitams_criticity     STRING OPTIONS(description = "Criticité du ticket CAPITAMS"),
   capitams_summary       STRING OPTIONS(description = 'Description of the issue'),
   capitams_status        STRING OPTIONS(description = 'Status in the workflow'),
   capitams_assignee      STRING OPTIONS(description = 'Assignee name via decryption'),
@@ -97,6 +98,7 @@ SELECT
 
   -- CAPITAMS Fields
   capitams.capitams_key,
+  capitams.capitams_criticity,
   capitams.capitams_summary,
   capitams.capitams_status,
   capitams.capitams_assignee,
