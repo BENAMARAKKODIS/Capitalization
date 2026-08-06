@@ -12,10 +12,6 @@ view: amq_s_capitalization_preprod {
     hidden: yes
     sql: ${TABLE}.capitams_component_names ;;
   }
-  dimension: capitams_criticity {
-    hidden: yes
-    sql: ${TABLE}.capitams_criticity ;;
-  }
   dimension: capitams_gsfa {
     type: string
     sql: ${TABLE}.capitams_gsfa ;;
@@ -43,6 +39,11 @@ view: amq_s_capitalization_preprod {
     type: string
     description: "Description of the issue, useful to analyze KPI but not to calculate it"
     sql: ${TABLE}.capitams_summary ;;
+  }
+  dimension: capitams_criticity {
+    type: string
+    label: "CAPITAMS Criticity"
+    sql: ${TABLE}.capitams_criticity ;;
   }
   dimension: top_priority {
     type: string
@@ -123,6 +124,18 @@ view: amq_s_capitalization_preprod {
     type: date
     label: "NRL Date Statut Valide"
     sql: ${TABLE}.nrl_date_statut_valide ;;
+  }
+  dimension: semaine {
+    type: string
+    label: "Semaine"
+    sql: ${TABLE}.snapshot_week ;;
+  }
+  dimension_group: snapshot {
+    type: time
+    timeframes: [date, week, month, quarter, year]
+    datatype: date
+    sql: ${TABLE}.snapshot_date ;;
+    label: "Snapshot"
   }
   dimension: kpi_perfo_v0 {
     type: number

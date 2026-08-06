@@ -6,7 +6,7 @@ view: +amq_s_capitalization_preprod {
 
 # ── URLS ────────────────────────────────────────────────────────
 dimension: vies_url {
-  label: "VIES Url"
+  label: "Vies Url"
   group_label: "Caracteristic Standard"
   type: string
   sql: CONCAT('https://jira.dt.renault.com/browse/', ${vies_ticket_id}) ;;
@@ -19,7 +19,7 @@ dimension: vies_url {
 }
 
 dimension: capitams_url {
-  label: "CapitAMS Url"
+  label: "Capitalization Url"
   group_label: "Caracteristic Standard"
   type: string
   sql:
@@ -53,7 +53,7 @@ dimension: domain_group {
 # ── KPI 3C BASE MEASURES ────────────────────────────────────────
 measure: count_base {
   type: count
-  label: "🔵 VIES Base (DOR Yes)"
+  label: "VIES Base (DOR Yes)"
   group_label: "KPI 3C"
   filters: [
     vies_dor_opinion: "VIES ready for capitalisation",
@@ -70,19 +70,19 @@ measure: count_base {
 
   measure: count_capitams_created {
     type: count
-    label: "🟢 Nb CapitAMS créé"
+    label: "Nb CapitAMS créé"
     group_label: "KPI 3C"
     filters: [
       vies_dor_opinion: "VIES ready for capitalisation",
       vies_status: "Ready for Deployment,Deploying,Closed",
       capitams_key: "-NULL"
     ]
-    drill_fields: [vies_ticket_id, vies_url, vies_domain, domain_group, vies_criticity, capitams_key, capitams_url, capitams_status, capitams_capitalization_status, capitams_gsfa]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, domain_group, vies_criticity, capitams_key, capitams_url, capitams_status, capitams_criticity, capitams_capitalization_status, capitams_gsfa]
   }
-  
+
   measure: count_nrl_npk {
     type: count
-    label: "🟠 Nb NRL validé + NPK"
+    label: "Nb NRL validé + NPK"
     group_label: "KPI 3C"
     filters: [
       vies_dor_opinion: "VIES ready for capitalisation",
@@ -90,7 +90,7 @@ measure: count_base {
       capitams_key: "-NULL",
       is_nrl_or_npk: "yes"
     ]
-    drill_fields: [vies_ticket_id, vies_url, vies_domain, domain_group, vies_criticity, capitams_key, capitams_url, capitams_nrl, nrl_date_statut_valide, capitams_capitalization_status]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, domain_group, vies_criticity, capitams_key, capitams_url, capitams_nrl, nrl_date_statut_valide, capitams_criticity, capitams_capitalization_status]
   }
   dimension: is_nrl_or_npk {
     type: yesno
@@ -107,7 +107,7 @@ measure: coverage_pct {
   label: "Coverage Globale %"
   group_label: "KPI 3C"
   sql: SAFE_DIVIDE(${count_capitams_created}, NULLIF(${count_base}, 0)) * 100 ;;
-  value_format: "0.0"
+  value_format: "0.0\"%\""
   drill_fields: [
     vies_ticket_id, vies_url,
     vies_domain, domain_group,
@@ -122,7 +122,7 @@ measure: completeness_pct {
   label: "Completeness %"
   group_label: "KPI 3C"
   sql: SAFE_DIVIDE(${count_nrl_npk}, NULLIF(${count_capitams_created}, 0)) * 100 ;;
-  value_format: "0.0"
+  value_format: "0.0\"%\""
   drill_fields: [
     vies_ticket_id, vies_url,
     vies_domain, domain_group,

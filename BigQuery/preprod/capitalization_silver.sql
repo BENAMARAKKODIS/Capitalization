@@ -1,11 +1,15 @@
 ---------------------------------------------------------
 -- Step 0. Table Construction with Specific Schema
+-- RUN ONCE ONLY to initialize the table
 ---------------------------------------------------------
 
 --- Ligne à changer: preprod / prod
-CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
+CREATE TABLE IF NOT EXISTS `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
 --- Bien faire attention (1/5)
 (
+  -- colonnes snapshot
+  snapshot_date          DATE OPTIONS(description = 'Date of the weekly snapshot'),
+  snapshot_week          STRING OPTIONS(description = 'Week label in WYYww format'),
   -- colonnes projet VIES
   vies_ticket_id         STRING NOT NULL OPTIONS(description = 'Unique Identification Number for a VIES ticket'),
   vies_summary           STRING OPTIONS(description = 'Description of the issue'),
@@ -23,7 +27,7 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   vies_creation_date     TIMESTAMP OPTIONS(description = 'Creation date of the VIES ticket used for partitioning'),  
   -- colonnes projet CAPITAMS
   capitams_key           STRING OPTIONS(description = 'Unique Identification Number for a CAPITAMS ticket'),
-  capitams_criticity     STRING OPTIONS(description = "Criticité du ticket CAPITAMS"),
+  capitams_criticity     STRING OPTIONS(description = 'Criticity of the CAPITAMS ticket'),
   capitams_summary       STRING OPTIONS(description = 'Description of the issue'),
   capitams_status        STRING OPTIONS(description = 'Status in the workflow'),
   capitams_assignee      STRING OPTIONS(description = 'Assignee name via decryption'),
@@ -39,8 +43,15 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   kpi_perfo_v2           INT64 OPTIONS(description = 'Duration of the v2 phase in calendar days'),
   top_priority           STRING OPTIONS(description = 'Statut de la capitalisation')
 )
-PARTITION BY DATE(vies_creation_date)
-AS
+PARTITION BY snapshot_date;
+
+---------------------------------------------------------
+-- Weekly INSERT — runs every Wednesday via scheduler
+---------------------------------------------------------
+
+--- Ligne à changer: preprod / prod
+INSERT INTO `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
+--- Bien faire attention (2/5)
 
 WITH
 ---------------------------------------------------------
@@ -52,7 +63,7 @@ preprocessed_vies AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_VIES_preprod`
 ),
---- Bien faire attention (2/5)
+--- Bien faire attention (3/5)
 
 ---------------------------------------------------------
 -- 2. SOURCE CAPITALIZATION
@@ -63,7 +74,7 @@ preprocessed_capitams AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_CAPITAMS_preprod`
 ),
---- Bien faire attention (3/5)
+--- Bien faire attention (4/5)
 
 ---------------------------------------------------------
 -- 3. SOURCE NRL
@@ -74,12 +85,16 @@ preprocessing_nrl AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_NRL_preprod`
 )
---- Bien faire attention (4/5)
+--- Bien faire attention (5/5)
 
 ---------------------------------------------------------
 -- 4. FINAL ASSEMBLY
 ---------------------------------------------------------
 SELECT
+  -- Snapshot fields
+  CURRENT_DATE() AS snapshot_date,
+  CONCAT('W', FORMAT_DATE('%y%V', CURRENT_DATE())) AS snapshot_week,
+
   -- VIES Fields
   vies.vies_ticket_id,
   vies.vies_summary,
@@ -123,7 +138,7 @@ SELECT
       ELSE
         DATE_DIFF(DATE(capitams.capitams_creation_date), DATE(vies.vies_v0_starting_date), DAY)
     END
-  ) AS kpi_perfo_v0, -- TO DO:  à renomer kpi_coverage
+  ) AS kpi_perfo_v0, -- TO DO: à renomer kpi_coverage
 
   -- KPI perfo v1 à changer avec date NRL
   GREATEST(
@@ -156,7 +171,7 @@ SELECT
       ELSE
         DATE_DIFF(CURRENT_DATE(), DATE(nrl.date_statut_valide), DAY)
     END 
-  ) AS kpi_perfo_v2, -- kpi_consistency partielle à faire plus tard 
+  ) AS kpi_perfo_v2, -- kpi_consistency partielle à faire plus tard
 
   ---------------------------------------------------------
   -- 5. Calcul du statut Top Priority
@@ -262,12 +277,3 @@ QUALIFY ROW_NUMBER() OVER (
   PARTITION BY vies.vies_ticket_id
   ORDER BY capitams.capitams_creation_date DESC
 ) = 1;
-
----------------------------------------------------------
--- 6. Primary Key Assignment
----------------------------------------------------------
-
---- Ligne à changer: preprod / prod
-ALTER TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
-ADD PRIMARY KEY (vies_ticket_id) NOT ENFORCED;
---- Bien faire attention (5/5)
