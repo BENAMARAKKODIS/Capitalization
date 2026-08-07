@@ -28,8 +28,8 @@ CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_
   capitams_status        STRING OPTIONS(description = 'Status in the workflow'),
   capitams_assignee      STRING OPTIONS(description = 'Assignee name via decryption'),
   capitams_component_names ARRAY<STRING> OPTIONS(description = 'List of component names'),
-  capitams_gsfa          STRING OPTIONS(description = "GSFA attaché au ticket"),
-  capitams_capitalization_status STRING OPTIONS(description = "Statut de capit du ticket"),
+  capitams_gsfa          STRING OPTIONS(description = 'GSFA attaché au ticket'),
+  capitams_capitalization_status STRING OPTIONS(description = 'Statut de capit du ticket'),
   capitams_nrl           STRING OPTIONS(description = 'NRL Reference'),
   -- colonnes NRL
   nrl_date_statut_valide DATE OPTIONS(description = 'Date statut valide from NRL preprocessing table'),
