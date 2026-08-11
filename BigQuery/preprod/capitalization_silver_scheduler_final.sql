@@ -2,6 +2,7 @@
 -- Scheduled Query : Weekly Snapshot
 -- Runs every Monday at 01:00 UTC
 -- Appends current state of silver pipeline to historization
+-- Requêtes programmées: capitalization_silver_scheduler_final
 ---------------------------------------------------------
 
 INSERT INTO `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
