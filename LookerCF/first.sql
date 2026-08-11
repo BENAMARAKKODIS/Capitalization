@@ -20,5 +20,5 @@ case(
   when(${amq_s_capitalization_preprod.vies_domain} = "Battery", "8. Battery"),
   when(${amq_s_capitalization_preprod.vies_domain} = "Electrotechnical", "9. Electrotechnical"),
   when(${amq_s_capitalization_preprod.vies_domain} = "e-Chassis", "A. e-Chassis"),
-  "Other"
+  "None"
 )
