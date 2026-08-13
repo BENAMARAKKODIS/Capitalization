@@ -51,7 +51,7 @@ view: amq_s_capitalization_preprod {
 
   dimension: capitams_criticity {
     type: string
-    label: "CAPITAMS Criticity"
+    label: "CapitAMS Criticity"
     sql: ${TABLE}.capitams_criticity ;;
     html:
       {% if value != null and value != vies_criticity._value %}
