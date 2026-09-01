@@ -68,7 +68,7 @@ base_vies_tickets AS (
       SELECT 1 FROM UNNEST(issuelinks) link 
       WHERE REGEXP_CONTAINS(link.type, 'duplicates')
     )
-    AND status.name IN ("Ready for Deployment", "Deploying", "Closed")
+    AND status.name IN ("Ready for Deployment", "Deploying", "Verified", "Closed")
 ),
 
 ---------------------------------------------------------
