@@ -1,5 +1,6 @@
 # Ligne à changer: preprod / prod
 
+
 include: "/views/Source/amq_s_capitalization_preprod.view.lkml"
 view: +amq_s_capitalization_preprod {
 # Bien faire attention (1/1)
@@ -59,6 +60,40 @@ dimension: domain_group {
         <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Connectivity Off-Board' %}
         <div style="background-color:#212121; color:#fff; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% else %}
+        <div style="background-color:#f5f5f5; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% endif %} ;;
+}
+
+# ── DOMAIN ORDERED ──────────────────────────────────────────────
+dimension: vies_domain_ordered {
+  type: string
+  label: "Domain (Ordered)"
+  group_label: "KPI 3C"
+  sql: CASE
+      WHEN ${vies_domain} = 'Multimedia' THEN '1. Multimedia'
+      WHEN ${vies_domain} = 'Meter' THEN '2. Meter'
+      WHEN ${vies_domain} = 'Connectivity On-Board' THEN '3. Connectivity On-Board'
+      WHEN ${vies_domain} = 'Connectivity Off-Board' THEN '4. Connectivity Off-Board'
+      WHEN ${vies_domain} = 'ADAS' THEN '5. ADAS'
+      WHEN ${vies_domain} = 'e-Body' THEN '6. e-Body'
+      WHEN ${vies_domain} = 'Wire Harness' THEN '7. Wire Harness'
+      WHEN ${vies_domain} = 'Battery' THEN '8. Battery'
+      WHEN ${vies_domain} = 'Electrotechnical' THEN '9. Electrotechnical'
+      WHEN ${vies_domain} = 'e-Chassis' THEN 'A. e-Chassis'
+      ELSE 'Other'
+    END ;;
+  html:
+      {% if value contains 'Multimedia' or value contains 'Meter' or value contains 'Connectivity On-Board' %}
+        <div style="background-color:#fff9c4; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value contains 'Connectivity Off-Board' %}
+        <div style="background-color:#212121; color:#fff; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value contains 'ADAS' %}
+        <div style="background-color:#ffcdd2; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value contains 'e-Body' or value contains 'Electrotechnical' or value contains 'e-Chassis' %}
+        <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value contains 'Wire Harness' or value contains 'Battery' %}
+        <div style="background-color:#d7ccc8; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% else %}
         <div style="background-color:#f5f5f5; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% endif %} ;;
