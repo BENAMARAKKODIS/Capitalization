@@ -157,19 +157,6 @@ view: amq_s_capitalization_preprod {
     sql: ${TABLE}.nrl_date_statut_valide ;;
   }
 
-  dimension: semaine {
-    type: string
-    label: "Semaine"
-    sql: ${TABLE}.snapshot_week ;;
-  }
-
-  dimension_group: snapshot {
-    type: time
-    timeframes: [date, week, month, quarter, year]
-    datatype: date
-    sql: ${TABLE}.snapshot_date ;;
-    label: "Snapshot"
-  }
 
   dimension: kpi_perfo_v0 {
     type: number
