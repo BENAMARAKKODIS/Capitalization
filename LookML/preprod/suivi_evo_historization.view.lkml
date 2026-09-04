@@ -1,5 +1,4 @@
 # Ligne à changer: preprod / prod
-
 view: suivi_evo_historization {
   sql_table_name: `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.suivi_evo_historization` ;;
 
@@ -24,6 +23,37 @@ view: suivi_evo_historization {
     datatype: date
     sql: ${TABLE}.snapshot_date ;;
     label: "Date"
+  }
+
+  # ── URLS ────────────────────────────────────────────────────────
+  dimension: vies_url {
+    label: "Vies Url"
+    group_label: "Caracteristic Standard"
+    type: string
+    sql: CONCAT('https://jira.dt.renault.com/browse/', ${vies_ticket_id}) ;;
+    html:
+      {% if value != null %}
+        <a href="{{ value }}" target="_blank" title="Voir le ticket VIES">
+          <img src="https://img.icons8.com/material-outlined/24/1a73e8/external-link.png" alt="Link" style="width:16px;height:16px;"/>
+        </a>
+      {% endif %} ;;
+  }
+
+  dimension: capitams_url {
+    label: "Capitalization Url"
+    group_label: "Caracteristic Standard"
+    type: string
+    sql:
+      CASE
+        WHEN ${capitams_key} IS NULL THEN NULL
+        ELSE CONCAT('https://jira.dt.renault.com/browse/', ${capitams_key})
+      END ;;
+    html:
+      {% if value != null %}
+        <a href="{{ value }}" target="_blank" title="Voir le ticket de Capitalisation">
+          <img src="https://img.icons8.com/material-outlined/24/1a73e8/external-link.png" alt="Link" style="width:16px;height:16px;"/>
+        </a>
+      {% endif %} ;;
   }
 
   # ── VIES DIMENSIONS ─────────────────────────────────────────────
@@ -117,19 +147,53 @@ view: suivi_evo_historization {
     sql: ${TABLE}.capitams_component_names ;;
   }
 
+  # ── HELPER DIMENSIONS ───────────────────────────────────────────
+  dimension: is_vies_ready {
+    type: yesno
+    hidden: yes
+    sql: (
+      ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
+      AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
+    ) ;;
+  }
+
+  dimension: is_capitams_created {
+    type: yesno
+    hidden: yes
+    sql: (
+      ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
+      AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
+      AND ${TABLE}.capitams_key IS NOT NULL
+    ) ;;
+  }
+
+  dimension: is_nrl_npk {
+    type: yesno
+    hidden: yes
+    sql: (
+      ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
+      AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
+      AND ${TABLE}.capitams_key IS NOT NULL
+      AND (
+        ${TABLE}.capitams_nrl IS NOT NULL
+        OR CONTAINS_SUBSTR(IFNULL(${TABLE}.capitams_capitalization_status, ''), 'NPK')
+      )
+    ) ;;
+  }
+
   # ── EXISTING MEASURES ───────────────────────────────────────────
   measure: count {
     type: count_distinct
     sql: ${vies_ticket_id} ;;
     label: "🔵 Total Backlog"
-    drill_fields: [vies_ticket_id, vies_domain, vies_status, top_priority, capitams_key]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, vies_status, top_priority, capitams_key, capitams_url]
   }
 
   measure: count_top_prio {
     type: count_distinct
     sql: CASE WHEN ${top_priority} IS NOT NULL THEN ${vies_ticket_id} END ;;
     label: "🟠 Top Prio"
-    drill_fields: [vies_ticket_id, vies_domain, vies_status, top_priority, capitams_key]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, vies_status, top_priority, capitams_key, capitams_url]
   }
 
   measure: count_green {
@@ -143,7 +207,7 @@ view: suivi_evo_historization {
         OR ${capitams_capitalization_status} = 'BMIR_EN COURS DE CAPITALISATION')
       THEN ${vies_ticket_id} END ;;
     label: "🟢 Capit en cours"
-    drill_fields: [vies_ticket_id, vies_domain, vies_status, capitams_key, capitams_capitalization_status]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, vies_status, capitams_key, capitams_url, capitams_capitalization_status]
   }
 
   measure: count_red {
@@ -155,48 +219,32 @@ view: suivi_evo_historization {
         OR CONTAINS_SUBSTR(IFNULL(${capitams_capitalization_status}, ''), 'NPK'))
       THEN ${vies_ticket_id} END ;;
     label: "🔴 Capit terminée"
-    drill_fields: [vies_ticket_id, vies_domain, vies_status, capitams_key, capitams_capitalization_status]
+    drill_fields: [vies_ticket_id, vies_url, vies_domain, vies_status, capitams_key, capitams_url, capitams_capitalization_status]
   }
 
   # ── KPI 3C MEASURES ─────────────────────────────────────────────
   measure: count_vies_ready {
-
-    type: count_distinct
+    type: count
     label: "🔵 VIES Ready for Capitalization"
     group_label: "KPI 3C"
-    sql: CASE WHEN
-          ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
-          AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
-          THEN ${TABLE}.vies_ticket_id END ;;
-    drill_fields: [snapshot_week, vies_ticket_id, vies_domain, vies_criticity, vies_status, capitams_key]
+    filters: [is_vies_ready: "yes"]
+    drill_fields: [snapshot_week, vies_ticket_id, vies_url, vies_domain, vies_criticity, vies_status, capitams_key, capitams_url]
   }
 
   measure: count_capitams_created {
-    type: count_distinct
+    type: count
     label: "🟢 CapitAMS Tickets Created"
     group_label: "KPI 3C"
-    sql: CASE WHEN
-          ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
-          AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
-          AND ${TABLE}.capitams_key IS NOT NULL
-          THEN ${TABLE}.vies_ticket_id END ;;
-    drill_fields: [snapshot_week, vies_ticket_id, vies_domain, vies_criticity, capitams_key, capitams_status, capitams_capitalization_status]
+    filters: [is_capitams_created: "yes"]
+    drill_fields: [snapshot_week, vies_ticket_id, vies_url, vies_domain, vies_criticity, capitams_key, capitams_url, capitams_status, capitams_capitalization_status]
   }
 
   measure: count_nrl_npk {
-    type: count_distinct
+    type: count
     label: "🟠 NRL Validated + NPK"
     group_label: "KPI 3C"
-    sql: CASE WHEN
-          ${TABLE}.vies_dor_opinion = 'VIES ready for capitalisation'
-          AND ${TABLE}.vies_status IN ('Ready for Deployment', 'Deploying', 'Closed')
-          AND ${TABLE}.capitams_key IS NOT NULL
-          AND (
-            ${TABLE}.capitams_nrl IS NOT NULL
-            OR CONTAINS_SUBSTR(IFNULL(${TABLE}.capitams_capitalization_status, ''), 'NPK')
-          )
-          THEN ${TABLE}.vies_ticket_id END ;;
-    drill_fields: [snapshot_week, vies_ticket_id, vies_domain, vies_criticity, capitams_key, capitams_nrl, capitams_capitalization_status]
+    filters: [is_nrl_npk: "yes"]
+    drill_fields: [snapshot_week, vies_ticket_id, vies_url, vies_domain, vies_criticity, capitams_key, capitams_url, capitams_nrl, capitams_capitalization_status]
   }
 
   measure: coverage_pct {
@@ -231,7 +279,7 @@ view: suivi_evo_historization__vies_component_names {
     label: "Vies Component Name"
     sql: ${TABLE} ;;
   }
-}   
+}
 
 view: suivi_evo_historization__capitams_component_names {
   dimension: suivi_evo_historization__capitams_component_names {
