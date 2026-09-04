@@ -1,4 +1,4 @@
-include: "/views/Source/suivi_evo_historization.view.lkml"
+include: "/views/Source/amq_s_suivi_evo_historization.view.lkml"
 
 explore: suivi_evo_historization {
   from: suivi_evo_historization
