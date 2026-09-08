@@ -57,7 +57,7 @@ dimension: domain_group {
         <div style="background-color:#ffcdd2; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Archi' %}
         <div style="background-color:#d7ccc8; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
-      {% elsif value == 'Fondation' %}
+      {% elsif value == 'Foundation' %}
         <div style="background-color:#55efc4; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'e-Body' %}
         <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
@@ -93,8 +93,10 @@ dimension: vies_domain_ordered {
         <div style="background-color:#212121; color:#fff; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value contains 'ADAS' %}
         <div style="background-color:#ffcdd2; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
-      {% elsif value contains 'e-Body' or value contains 'Electrotechnical' or value contains 'e-Chassis' %}
+      {% elsif value contains 'e-Body' %}
         <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value contains 'Electrotechnical' %}
+        <div style="background-color:#55efc4; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value contains 'Wire Harness' or value contains 'Battery' %}
         <div style="background-color:#d7ccc8; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% else %}
