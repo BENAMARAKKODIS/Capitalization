@@ -46,7 +46,8 @@ dimension: domain_group {
       WHEN ${vies_domain} = 'Connectivity Off-Board' THEN 'Connectivity Off-Board'
       WHEN ${vies_domain} IN ('Wire Harness', 'Battery') THEN 'Archi'
       WHEN ${vies_domain} = 'ADAS' THEN 'ADAS'
-      WHEN ${vies_domain} IN ('e-Body', 'Electrotechnical') THEN 'Fondation'
+      WHEN ${vies_domain} = 'e-Body' THEN 'e-Body'
+      WHEN ${vies_domain} = 'Electrotechnical' THEN 'Foundation'
       ELSE 'Other'
     END ;;
   html:
@@ -57,6 +58,8 @@ dimension: domain_group {
       {% elsif value == 'Archi' %}
         <div style="background-color:#d7ccc8; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Fondation' %}
+        <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+      {% elsif value == 'e-Body' %}
         <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Connectivity Off-Board' %}
         <div style="background-color:#212121; color:#fff; padding:4px; border-radius:4px;">{{ value }}</div>
