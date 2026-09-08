@@ -58,7 +58,7 @@ dimension: domain_group {
       {% elsif value == 'Archi' %}
         <div style="background-color:#d7ccc8; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Fondation' %}
-        <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
+        <div style="background-color:#55efc4; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'e-Body' %}
         <div style="background-color:#e1bee7; color:#000; padding:4px; border-radius:4px;">{{ value }}</div>
       {% elsif value == 'Connectivity Off-Board' %}
