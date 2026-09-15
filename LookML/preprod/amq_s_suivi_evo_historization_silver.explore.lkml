@@ -2,7 +2,7 @@
 
 include: "/views/Source/amq_s_suivi_evo_historization_silver.view.lkml"
 
-explore: amq_s_suivi_evo_historization_silver {
+explore: suivi_evo_historization_silver {
   from: amq_s_suivi_evo_historization_silver
   view_name: suivi_evo_historization_silver
   label: "Suivi EVO — Weekly Tracking (Silver)"
