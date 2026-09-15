@@ -1,6 +1,6 @@
 # Ligne à changer: preprod / prod
 
-view: suivi_evo_historization_silver {
+view: amq_s_suivi_evo_historization_silver {
   sql_table_name: `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.suivi_evo_historization_silver` ;;
 
   # ── PRIMARY KEY ─────────────────────────────────────────────────
