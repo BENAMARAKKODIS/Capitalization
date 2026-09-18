@@ -3,7 +3,7 @@
 ---------------------------------------------------------
 
 --- Ligne à changer: preprod / prod
-CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_VIES`
+CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_private_irn_79023_lqd_lup_quality_data.preprocessing_VIES_production`
 --- Bien faire attention (1/1)
 (
   vies_ticket_id         STRING NOT NULL OPTIONS(description = 'Unique Identification Number for a JIRA ticket'),
@@ -68,7 +68,7 @@ base_vies_tickets AS (
       SELECT 1 FROM UNNEST(issuelinks) link 
       WHERE REGEXP_CONTAINS(link.type, 'duplicates')
     )
-    AND status.name IN ("Ready for Deployment", "Deploying", "Closed")
+    AND status.name IN ("Ready for Deployment", "Deploying", "Verified", "Closed")
 ),
 
 ---------------------------------------------------------
@@ -254,6 +254,7 @@ SELECT
     vies_dor_yes_favourable_date,
     vies_ready_for_deployment_date
   ) AS vies_v0_starting_date
+  -- WHERE vies_ready_for_deployment_date >= TIMESTAMP('2025-12-01') -- a maj tous les ans
 
 FROM final_without_v0
 WHERE vies_plateau IS NOT NULL;

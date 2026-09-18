@@ -1,5 +1,3 @@
-# Tout changer entre la prod et la preprod
-
 include: "/views/Source/d_plateau_techno_serial_life.view.lkml"
 include: "/views/Add/Add_d_plateau_techno_serial_life.view.lkml"
 

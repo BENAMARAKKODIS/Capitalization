@@ -5,7 +5,7 @@
 
 --- Ligne à changer: preprod / prod
 CREATE OR REPLACE TABLE `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.capitalization_silver`
---- Bien faire attention (1/5)
+--- Bien faire attention (1/4)
 
 AS
 
@@ -19,7 +19,7 @@ preprocessed_vies AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_VIES_preprod`
 ),
---- Bien faire attention (2/5)
+--- Bien faire attention (2/4)
 
 ---------------------------------------------------------
 -- 2. SOURCE CAPITALIZATION
@@ -30,7 +30,7 @@ preprocessed_capitams AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_CAPITAMS_preprod`
 ),
---- Bien faire attention (3/5)
+--- Bien faire attention (3/4)
 
 ---------------------------------------------------------
 -- 3. SOURCE NRL
@@ -41,7 +41,7 @@ preprocessing_nrl AS (
   SELECT *
   FROM `irn-79023-lqd-dat-ope-05.db_domainrestricted_irn_79023_lqd_lup_quality_data.preprocessing_NRL_preprod`
 )
---- Bien faire attention (4/5)
+--- Bien faire attention (4/4)
 
 ---------------------------------------------------------
 -- 4. FINAL ASSEMBLY
